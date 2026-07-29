@@ -25,7 +25,7 @@
 ## 詳細データ
 
 ポスター発表の図表と実数値(回別集計・種別ごとの分布・感度分析)を
-**https://tamikenn.github.io/jmle-charcount/data/** に掲載しています。試験問題の本文は含みません。
+**https://tamikenn.github.io/jmle-charcount/data/** に掲載しています。同ページから PDF もダウンロードできます。試験問題の本文は含みません。
 
 ## ファイル
 

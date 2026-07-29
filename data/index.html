@@ -44,7 +44,27 @@
   footer{margin-top:44px;padding-top:16px;border-top:2px solid var(--navy);font-size:.82rem;color:var(--mute)}
   footer b{color:var(--ink)}
   a{color:var(--navy2)}
-  @media print{ body::before{position:absolute;height:100%} }
+  .dl{display:inline-block;margin:0 0 24px;padding:10px 18px;border-radius:6px;
+      background:var(--navy);color:#fff;text-decoration:none;font-size:.9rem}
+  .dl:hover{background:var(--navy2)}
+  /* 印刷/PDF: position:fixed の疑似要素は1ページ目にしか出ないため、
+     ルート要素の背景として敷き直す(canvas へ伝播し全ページに繰り返される)。 */
+  @media print{
+    body::before{display:none}
+    html{
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='780' height='470'><g transform='rotate(-22 50 280)' font-family='HGPSoeiKakugothicUB,HiraginoSans-W8,BIZUDPGothic,sans-serif' font-weight='bold' fill='%236f6f6f' fill-opacity='0.05'><text x='40' y='270' font-size='50' letter-spacing='2'>第58回 日本医学教育学会大会</text><text x='44' y='310' font-size='22' letter-spacing='1'>民谷 健太郎(2026)</text></g></svg>");
+      background-repeat:repeat;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    }
+    body{background:transparent}
+    .wrap{max-width:none;padding:0 6mm}
+    .dl{display:none}
+    figure,.tw{break-inside:avoid}
+    .fig svg{min-width:0}
+    table{min-width:0;font-size:.72rem}
+    thead th{position:static}
+  }
+  @page{ size:A4; margin:12mm 8mm; }
 </style>
 </head>
 <body>
@@ -61,6 +81,8 @@
 学会抄録と同一です。同じ規則で任意のテキストを数えられるツールを
 <a href="../">こちら</a>で公開しています。
 </p>
+
+<a class="dl" href="jmle-charcount-data.pdf" download>PDF をダウンロード(図表・全データ)</a>
 
 <h2>要約</h2>
 <div class="kpi">
