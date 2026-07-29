@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>日本語テキスト 文字数カウンタ — JMLE文字数研究</title>
+<style>
+  :root{
+    --navy:#16295f; --navy2:#1f3c8e; --enji:#8e3a44; --enji2:#b34e59;
+    --paper:#f5f4f0; --ink:#1e2440; --mute:#6e6a58; --line:#e4e0d6; --card:#fff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"BIZ UDGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.7;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 56px}
+  header{border-bottom:3px solid var(--navy);padding-bottom:14px;margin-bottom:20px}
+  h1{font-size:1.32rem;margin:0 0 6px;color:var(--navy);letter-spacing:.01em}
+  .sub{font-size:.86rem;color:var(--mute);margin:0}
+  .rule{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--navy2);
+        padding:12px 14px;border-radius:4px;font-size:.9rem;margin:0 0 18px}
+  .rule b{color:var(--navy)}
+  label{display:block;font-size:.86rem;color:var(--mute);margin:0 0 6px}
+  textarea{
+    width:100%;min-height:170px;padding:12px;border:1px solid var(--line);border-radius:6px;
+    font-family:inherit;font-size:1rem;line-height:1.75;background:var(--card);color:var(--ink);resize:vertical;
+  }
+  textarea:focus{outline:2px solid var(--navy2);outline-offset:1px}
+  .row{display:flex;gap:10px;margin:10px 0 22px;flex-wrap:wrap}
+  button{
+    font-family:inherit;font-size:.9rem;padding:9px 16px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--navy);background:var(--navy);color:#fff;
+  }
+  button.ghost{background:transparent;color:var(--navy)}
+  button:active{transform:translateY(1px)}
+  .main{background:var(--navy);color:#fff;border-radius:8px;padding:18px 20px;margin:0 0 14px}
+  .main .lab{font-size:.82rem;opacity:.86;margin:0}
+  .main .num{font-size:3rem;font-weight:700;line-height:1.1;margin:2px 0 0;font-variant-numeric:tabular-nums}
+  .main .num span{font-size:1.1rem;font-weight:400;margin-left:6px;opacity:.9}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin:0 0 22px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:11px 13px}
+  .tile .lab{font-size:.78rem;color:var(--mute);margin:0}
+  .tile .num{font-size:1.5rem;font-weight:700;margin:1px 0 0;font-variant-numeric:tabular-nums;color:var(--navy)}
+  .tile.off .num{color:var(--mute)}
+  h2{font-size:.95rem;color:var(--navy);margin:26px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem;background:var(--card)}
+  th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--mute);font-weight:400;font-size:.8rem}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  tr.excl td{color:var(--mute)} tr.excl td.n{font-weight:400}
+  .note{font-size:.8rem;color:var(--mute);margin:8px 0 0}
+  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:.8rem;color:var(--mute)}
+  footer b{color:var(--ink);font-weight:700}
+  @media (prefers-color-scheme:dark){
+    :root{--paper:#14161c;--card:#1c1f28;--ink:#e8e6e0;--line:#333844;--mute:#9a968a;--navy:#8ea8e0;--navy2:#6f8fd4}
+    .main{background:#1f2a48}
+    .main .num,.tile .num{color:var(--navy)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>日本語テキスト 文字数カウンタ</h1>
+  <p class="sub">医師国家試験問題の文字数に関する定量的分析(第101回〜第120回 20年間の推移)で用いた計数規則の実装</p>
+</header>
+
+<p class="rule">
+  <b>計数規則</b>:ひらがな・カタカナ・漢字・英字(ギリシャ文字を含む)・数字を <b>1字＝1カウント</b>。
+  句読点・記号・スペースは<b>数えません</b>。Unicode NFC 正規化のうえ、制御文字・書式文字は除外します。
+</p>
+
+<label for="src">テキストを貼り付けてください(入力内容はブラウザ内で処理され、送信されません)</label>
+<textarea id="src" placeholder="例)72歳の男性。3日前から38.5℃の発熱と咳嗽が出現した。"></textarea>
+<div class="row">
+  <button id="sample" class="ghost" type="button">サンプルを入れる</button>
+  <button id="clear" class="ghost" type="button">クリア</button>
+</div>
+
+<div class="main">
+  <p class="lab">主指標 — 本研究の計数規則による文字数</p>
+  <p class="num" id="body">0<span>字</span></p>
+</div>
+
+<div class="grid">
+  <div class="tile"><p class="lab">副指標:総印字文字数<br>(句読点・記号を含む)</p><p class="num" id="printed">0</p></div>
+  <div class="tile off"><p class="lab">参考:空白を含む総数</p><p class="num" id="ws">0</p></div>
+  <div class="tile"><p class="lab">漢字の割合</p><p class="num" id="kpct">0.0<span style="font-size:.9rem">%</span></p></div>
+  <div class="tile"><p class="lab">英字の割合</p><p class="num" id="lpct">0.0<span style="font-size:.9rem">%</span></p></div>
+</div>
+
+<h2>文字種の内訳</h2>
+<table>
+  <thead><tr><th>文字種</th><th style="text-align:right">字数</th><th style="text-align:right">主指標に占める割合</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+<p class="note">網掛けのない下段(句読点・記号・空白・その他)は主指標に算入されません。</p>
+
+<footer>
+  <p><b>民谷 健太郎</b>(サイサ株式会社 ／ 旭川医科大学 地域共生医育センター)<br>
+  第58回 日本医学教育学会大会 ポスター発表</p>
+  <p>本ページは単独で動作します。同一の規則の Python 実装(<code>count.py</code>)も同じ配布物に含まれます。</p>
+</footer>
+
+</div>
+
+<script>
+const BODY_CLASSES = ["kanji", "hiragana", "katakana", "latin", "digit"];
+const GREEK_LOWER = "αβγδεζηθικλμνξοπρστυφχψω";
+const PUNCT_EXTRA = "、。「」『』〈〉《》【】・…―";
+const SYMBOL_EXTRA = "℃％±×÷≦≧〒";
+const DIGIT_EXTRA = "²³¹፩፪፫፬፭፮፯፰፱᧚⁰⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉①②③④⑤⑥⑦⑧⑨⑴⑵⑶⑷⑸⑹⑺⑻⑼⒈⒉⒊⒋⒌⒍⒎⒏⒐⓪⓵⓶⓷⓸⓹⓺⓻⓼⓽⓿❶❷❸❹❺❻❼❽❾➀➁➂➃➄➅➆➇➈➊➋➌➍➎➏➐➑➒𐩀𐩁𐩂𐩃𐹠𐹡𐹢𐹣𐹤𐹥𐹦𐹧𐹨𑁒𑁓𑁔𑁕𑁖𑁗𑁘𑁙𑁚🄀🄁🄂🄃🄄🄅🄆🄇🄈🄉🄊";
+
+function charClass(ch) {
+  const o = ch.codePointAt(0);
+  if (" 　\t\n\r\f\v".includes(ch)) return "whitespace";
+  if (o >= 0x3040 && o <= 0x309f) return "hiragana";
+  if ((o >= 0x30a0 && o <= 0x30ff) || (o >= 0x31f0 && o <= 0x31ff)) return "katakana";
+  if ((o >= 0x4e00 && o <= 0x9fff) || (o >= 0x3400 && o <= 0x4dbf) ||
+      (o >= 0xf900 && o <= 0xfaff) || (o >= 0x20000 && o <= 0x2fa1f) ||
+      "々〆〤ヶ".includes(ch)) return "kanji";
+  if ((o >= 0x41 && o <= 0x5a) || (o >= 0x61 && o <= 0x7a) ||
+      (o >= 0xff21 && o <= 0xff3a) || (o >= 0xff41 && o <= 0xff5a) ||
+      (o >= 0xc0 && o <= 0x24f) || GREEK_LOWER.includes(ch)) return "latin";
+  if (/\p{Nd}/u.test(ch) || DIGIT_EXTRA.includes(ch) || (o >= 0xff10 && o <= 0xff19)) return "digit";
+  if (/\p{P}/u.test(ch) || PUNCT_EXTRA.includes(ch)) return "punct";
+  if (/\p{S}/u.test(ch) || SYMBOL_EXTRA.includes(ch)) return "symbol";
+  return "other";
+}
+
+function countText(text) {
+  let nfc = (text || "").normalize("NFC");
+  nfc = Array.from(nfc).filter((ch) => !/\p{Cc}|\p{Cf}/u.test(ch)).join("");
+  const noWs = nfc.replace(/\s+/gu, "");
+  const byClass = {};
+  for (const ch of nfc) { const k = charClass(ch); byClass[k] = (byClass[k] || 0) + 1; }
+  const body = BODY_CLASSES.reduce((s, c) => s + (byClass[c] || 0), 0);
+  return {
+    body,
+    printed_total: Array.from(noWs).length,
+    with_whitespace: Array.from(nfc).length,
+    by_class: byClass,
+    kanji_pct: body ? Math.round(((byClass.kanji || 0) / body) * 1000) / 10 : 0,
+    latin_pct: body ? Math.round(((byClass.latin || 0) / body) * 1000) / 10 : 0,
+  };
+}
+
+const LABELS = {
+  kanji: "漢字", hiragana: "ひらがな", katakana: "カタカナ",
+  latin: "英字・ギリシャ文字", digit: "数字",
+  punct: "句読点(除外)", symbol: "記号(除外)", whitespace: "空白(除外)", other: "その他(除外)",
+};
+const ORDER = ["kanji", "hiragana", "katakana", "latin", "digit", "punct", "symbol", "whitespace", "other"];
+
+const $ = (id) => document.getElementById(id);
+function render() {
+  const r = countText($("src").value);
+  $("body").innerHTML = r.body.toLocaleString() + "<span>字</span>";
+  $("printed").textContent = r.printed_total.toLocaleString();
+  $("ws").textContent = r.with_whitespace.toLocaleString();
+  $("kpct").innerHTML = r.kanji_pct.toFixed(1) + '<span style="font-size:.9rem">%</span>';
+  $("lpct").innerHTML = r.latin_pct.toFixed(1) + '<span style="font-size:.9rem">%</span>';
+  $("tbody").innerHTML = ORDER.map((k) => {
+    const n = r.by_class[k] || 0;
+    const inBody = BODY_CLASSES.includes(k);
+    const pct = inBody && r.body ? ((n / r.body) * 100).toFixed(1) + "%" : "—";
+    return `<tr class="${inBody ? "" : "excl"}"><td>${LABELS[k]}</td><td class="n">${n.toLocaleString()}</td><td class="n">${pct}</td></tr>`;
+  }).join("");
+}
+
+$("src").addEventListener("input", render);
+$("clear").addEventListener("click", () => { $("src").value = ""; render(); $("src").focus(); });
+$("sample").addEventListener("click", () => {
+  $("src").value = "72歳の男性。3日前から38.5℃の発熱と咳嗽が出現し、本日呼吸困難を訴えて受診した。既往に2型糖尿病があり、HbA1c 7.2%(基準4.6〜6.2)。胸部エックス線写真で右下肺野に浸潤影を認める。";
+  render();
+});
+render();
+</script>
+</body>
+</html>
